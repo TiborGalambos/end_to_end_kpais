@@ -11,6 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--incognito")
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 
 def click_link(link_text):
     link = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
@@ -117,8 +118,74 @@ def test_github_send_feedback():
     assert 'Thank you! We received your feedback.' in feedback_message.text
 
 
-with webdriver.Chrome() as driver:
-    test_github_raw_file()
-    test_github_send_feedback()
+def test_dsl():
+    wait = WebDriverWait(driver, 5)
+    driver.set_window_size(1920, 1080)
+    driver.get('https://www.dsl.sk')
 
+    # 1.
+    speedmeter = wait.until(presence_of_element_located((By.LINK_TEXT, 'Speedmeter')))
+    speedmeter.click()
+
+    # 2.
+    speedmeter_start = wait.until(presence_of_element_located((By.LINK_TEXT, 'Otestuj rýchlosť pripojenia')))
+    speedmeter_start.click()
+
+    # 3.
+    form = wait.until(presence_of_element_located((By.XPATH, '//form[@action="speedmeter.php"]')))
+    type = form.find_element(By.NAME, 'type')
+    select = Select(type)
+    select.select_by_value('OTHER')
+    provider = form.find_element(By.NAME, 'provider')
+    select = Select(provider)
+    select.select_by_value('OTHER')
+    other_provider = form.find_element(By.NAME, 'other_provider')
+    other_provider.send_keys('test' + Keys.ENTER)
+
+    body = wait.until(presence_of_element_located((By.XPATH, '//div[@id="body"]')))
+
+    print(body.text)
+
+    assert 'Ďakujeme za odoslanie parametrov' in body.text
+
+
+def test_dsl_name_required():
+    wait = WebDriverWait(driver, 5)
+    driver.set_window_size(1920, 1080)
+    driver.get('https://www.dsl.sk')
+
+    # 1.
+    searchbox = wait.until(presence_of_element_located((By.NAME, "keyword")))
+    searchbox.send_keys('RAM' + Keys.ENTER)
+
+    # 2.
+    article = wait.until(presence_of_element_located((By.XPATH, '//a[text()="Ceny RAM aj flash sa majú už otočiť a začať rásť"]')))
+    article.click()
+
+    # 3.
+    comment = wait.until(presence_of_element_located((By.XPATH, '//a[text()="Pridať komentár"]')))
+    comment.click()
+
+    # 4.
+    textarea = wait.until(presence_of_element_located((By.NAME, 'msg')))
+    textarea.send_keys('Lorem ipsum')
+
+    submit_button = wait.until(presence_of_element_located((By.XPATH, '//input[@value="Pridať"]')))
+    submit_button.click()
+
+    body = wait.until(presence_of_element_located((By.NAME, 'add_form')))
+    print(body.text)
+
+    time.sleep(3)
+    assert 'Meno musí mať dĺžku aspoň 3 znaky.' in body.text
+
+
+
+
+with webdriver.Chrome() as driver:
+    # test_github_raw_file()
+    # test_github_send_feedback()
+    # test_dsl()
+
+    test_dsl_name_required()
 
