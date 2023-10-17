@@ -31,7 +31,7 @@ def test_github_raw_file():
     input_field.send_keys('TiborGalambos' + Keys.ENTER)
 
     # 3.
-    users = wait.until(presence_of_element_located((By.LINK_TEXT, 'Users')))
+    users = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, 'Users')))
     users.click()
 
     # 4.
@@ -176,7 +176,7 @@ def test_dsl_name_required():
     body = wait.until(presence_of_element_located((By.NAME, 'add_form')))
     print(body.text)
 
-    time.sleep(3)
+    # time.sleep(3)
     assert 'Meno musí mať dĺžku aspoň 3 znaky.' in body.text
 
 
@@ -186,6 +186,5 @@ with webdriver.Chrome() as driver:
     # test_github_raw_file()
     # test_github_send_feedback()
     # test_dsl()
-
-    test_dsl_name_required()
+    # test_dsl_name_required()
 
